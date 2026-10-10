@@ -24,17 +24,21 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           SINCE=$(date -u -d "$LOOKBACK ago" +%Y-%m-%dT%H:%M:%SZ)
-          RESULT=$(gh pr list --repo "$REPO" --label "$LABEL" --state open \
+          gh pr list --repo "$REPO" --label "$LABEL" --state open \
           --search "created:>=$SINCE"  --limit 25 --json number,title,author,url,createdAt,reviews,reviewRequests \
-          --jq '.[] | {  
+          --jq 'map({  
             number,
             title,
             author: .author.login,
             url,
             createdAt,
             reviewers: (([.reviews[].author.login] + [.reviewRequests[].login]) | unique)
-          }') > prs.json
-          echo "Found $(jq length prs.json) new PRs"
+          })' > prs.json
+          if ! jq -e 'type == "array"' prs.json > /dev/null 2>&1; then 
+            echo "::error::prs.json is missing, empty, or not a JSON array"
+            exit 1
+          fi
+          echo "Found $(jq length prs.json) new PRs. github. repository_owner: ${{github.repository_owner}}."
       - name: "Check that I'm not author or reviewer"
         run: |
           TOTAL=$(jq length prs.json)
