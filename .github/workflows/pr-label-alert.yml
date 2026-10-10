@@ -12,8 +12,7 @@ permissions: {}
 env:
   REPO: hackforla/website
   LABEL: "Complexity: LARGE"
-  LOOKBACK: "48 hours"
-  ME: "mocodesss"
+  LOOKBACK: "9 days"
 
 jobs:
   check-and-alert:
@@ -38,11 +37,11 @@ jobs:
             echo "::error::prs.json is missing, empty, or not a JSON array"
             exit 1
           fi
-          echo "Found $(jq length prs.json) new PRs. github. repository_owner: ${{github.repository_owner}}."
+          echo "Found $(jq length prs.json) new PRs. github."
       - name: "Check that I'm not author or reviewer"
         run: |
           TOTAL=$(jq length prs.json)
-          AVAILABLE=$(jq --arg me "$ME" \
+          AVAILABLE=$(jq --arg me "${{github.repository_owner}}" \
             'map(select(.author != $me and (any(.reviewers[]; . == $me) | not)))' prs.json)
           COUNT=$(echo "$AVAILABLE" | jq 'length')
 
