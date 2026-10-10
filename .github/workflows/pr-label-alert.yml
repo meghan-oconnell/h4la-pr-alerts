@@ -51,5 +51,5 @@ jobs:
             echo "Nothing new that you don't own or haven't already claimed."
           else
             echo "Available PRs:"
-            echo "$AVAILABLE" | jq -r '.[] | "\#\(.number) - \(.title)\n Go to url: \(.url)\nCreated: \(.createdAt)\n"'
+            echo "$AVAILABLE" | jq -r '.[] | "\(.number) - \(.title)\n Go to url: \(.url)\nCreated: \(.createdAt)\n"'
           fi
