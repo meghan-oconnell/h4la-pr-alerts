@@ -1,0 +1,52 @@
+name: "PRs with Label Alert"
+
+on:
+  schedule:
+    - cron: "45 5 * * *"
+      timezone: "America/New_York"
+  workflow_dispatch:
+
+permissions: {}
+
+# Customize here
+env:
+  REPO: hackforla/website
+  LABEL: "Complexity: LARGE"
+  LOOKBACK: "48 hours"
+  ME: "mocodesss"
+
+jobs:
+  check-and-alert:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Find new PRs w/ label"
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          SINCE=$(date -u -d "$LOOKBACK ago" +%Y-%m-%dT%H:%M:%SZ)
+          RESULT=$(gh pr list --repo "$REPO" --label "$LABEL" --state open \
+          --search "created:>=$SINCE"  --limit 25 --json number,title,author,url,createdAt,reviews,reviewRequests \
+          --jq '.[] | {  
+            number,
+            title,
+            author: .author.login,
+            url,
+            createdAt,
+            reviewers: (([.reviews[].author.login] + [.reviewRequests[].login]) | unique)
+          }') > prs.json
+          echo "Found $(jq length prs.json) new PRs"
+      - name: "Check that I'm not author or reviewer"
+        run: |
+          TOTAL=$(jq length prs.json)
+          AVAILABLE=$(jq --arg me "$ME" \
+            'map(select(.author != $me and (any(.reviewers[]; . == $me) | not)))' prs.json)
+          COUNT=$(echo "$AVAILABLE" | jq 'length')
+
+          if [ "$TOTAL" -eq 0 ]; then
+            echo "Nothing new."
+          elif [ "$COUNT" -eq 0]; then
+            echo "Nothing new that you don't own or haven't already claimed."
+          else
+            echo "Available PRs:"
+            echo "$AVAILABLE" | jq -r '.[] | "\(.number) \(.title)\n\(.url)\nCreated: \(.createdAt)\n"'
+          fi
