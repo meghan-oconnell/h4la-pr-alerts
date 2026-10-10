@@ -33,8 +33,8 @@ jobs:
             createdAt,
             reviewers: (([.reviews[].author.login] + [.reviewRequests[].login]) | unique)
           })' > prs.json
-          if ! jq -e 'type == "array"' prs.json > /dev/null 2>&1; then 
-            echo "::error::prs.json is missing, empty, or not a JSON array"
+          if [ ! -s prs.json ]; then 
+            echo "prs.json is missing or empty"
             exit 1
           fi
           echo "Found $(jq length prs.json) new PRs."
@@ -51,5 +51,5 @@ jobs:
             echo "Nothing new that you don't own or haven't already claimed."
           else
             echo "Available PRs:"
-            echo "$AVAILABLE" | jq -r '.[] | "\(.number) - \(.title)\n Go to url: \(.url)\nCreated: \(.createdAt)\n"'
+            echo "$AVAILABLE" | jq -r '.[] | "\(.number) - \(.title)\nGo to url: \(.url)\nCreated: \(.createdAt)\n"'
           fi
