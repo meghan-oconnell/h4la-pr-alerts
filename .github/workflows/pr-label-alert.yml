@@ -2,7 +2,7 @@ name: "PRs with label(s) alert"
 
 on:
   schedule:
-    - cron: "45 5 * * *"
+    - cron: "45 * * * *"
       timezone: "America/New_York"
   workflow_dispatch:
 
@@ -13,7 +13,7 @@ permissions:
 # Customize here
 env:
   REPO: hackforla/website
-  LABEL: "Complexity: Medium"
+  LABEL: "good first issue"
   LOOKBACK: "40 days"
   COMMENT_NUMBER: "1"
 
