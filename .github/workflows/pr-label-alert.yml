@@ -12,7 +12,7 @@ permissions:
 # Customize here
 env:
   REPO: hackforla/website
-  LABEL: "Complexity: LARGE"
+  LABEL: "Complexity: Large"
   LOOKBACK: "5 months"
   COMMENT_NUMBER: "1"
 
