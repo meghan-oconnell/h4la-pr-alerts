@@ -14,7 +14,7 @@ permissions:
 env:
   REPO: hackforla/website
   LABEL: "Complexity: Large"
-  LOOKBACK: "90 days"
+  LOOKBACK: "40 days"
   COMMENT_NUMBER: "1"
 
 jobs:
@@ -64,5 +64,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          echo messages.txt  
           gh issue comment $COMMENT_NUMBER --repo "${{ github.repository }}" --body-file message.txt

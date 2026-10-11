@@ -2,7 +2,7 @@
 
 To be notified when an issue/ PR opens up, depending on labels
 
-### Setup
+### Setup:
 
 - Fork this repo.
 - Create an issue in your repo where the alerts will be posted as comments. Make sure you are subscribed to the issue (see button on right panel of issue). Note the number of that issue (likely #1).
