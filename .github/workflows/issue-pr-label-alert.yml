@@ -13,9 +13,9 @@ permissions:
 # Customize here
 env:
   REPO: hackforla/website
-  TYPE: '[ "Issue" ]' # must be string of array. Exs: '[ "PR" ]', '[ "Issue" ]', or both '[ "PR", "Issue" ]'
+  TYPE: '[ "Issue", "PR" ]' # must be string of array. Exs: '[ "PR" ]', '[ "Issue" ]', or both '[ "PR", "Issue" ]'
   STATUS: '[ "Prioritized backlog" ]' # must be string of array. Exs: '[ "Prioritized backlog" ]', '[ "ERs and epics that are ready to be turned into issues" ]', or both '[ "Prioritized backlog", "ERs and epics that are ready to be turned into issues" ]'
-  LABEL: "Complexity: Small"
+  LABEL: "Complexity: Medium"
   LOOKBACK: "40 days"
   COMMENT_NUMBER: "1"
 
