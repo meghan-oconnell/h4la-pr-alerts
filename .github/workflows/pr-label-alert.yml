@@ -8,6 +8,7 @@ on:
 
 permissions:
   issues: write
+  pull-requests: read
 
 # Customize here
 env:
