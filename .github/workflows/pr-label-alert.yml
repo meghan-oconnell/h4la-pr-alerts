@@ -13,7 +13,7 @@ permissions:
 env:
   REPO: hackforla/website
   LABEL: "Complexity: Large"
-  LOOKBACK: "5 months"
+  LOOKBACK: "90 days"
   COMMENT_NUMBER: "1"
 
 jobs:
