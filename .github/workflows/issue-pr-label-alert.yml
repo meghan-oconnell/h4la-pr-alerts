@@ -13,8 +13,9 @@ permissions:
 # Customize here
 env:
   REPO: hackforla/website
-  TYPE: '[ "PR" ]' # must be string of array. Options: '[ "PR" ]', '[ "Issue" ]', or both '[ "PR", "Issue" ]'
-  LABEL: "Complexity: Large"
+  TYPE: '[ "Issue" ]' # must be string of array. Exs: '[ "PR" ]', '[ "Issue" ]', or both '[ "PR", "Issue" ]'
+  STATUS: '[ "Prioritized backlog" ]' # must be string of array. Exs: '[ "Prioritized backlog" ]', '[ "ERs and epics that are ready to be turned into issues" ]', or both '[ "Prioritized backlog", "ERs and epics that are ready to be turned into issues" ]'
+  LABEL: "Complexity: Small"
   LOOKBACK: "40 days"
   COMMENT_NUMBER: "1"
 
@@ -22,6 +23,27 @@ jobs:
   check-and-alert:
     runs-on: ubuntu-latest
     steps:
+      - name: "Find new Issues w/ label"
+        if: contains(fromJSON(env.TYPE), 'Issue')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          SINCE=$(date -u -d "$LOOKBACK ago" +%Y-%m-%dT%H:%M:%SZ)
+          gh issue list --repo "$REPO" --label "$LABEL" --state open \
+          --search "created:>=$SINCE"  --limit 25 --json number,title,author,url,createdAt,assignees \
+          --jq 'map({  
+            number,
+            title,
+            author: .author.login,
+            url,
+            createdAt,
+            assignees: [(.assignees[] // [])[].login]
+          })' >> issues-and-prs.json
+          if [ ! -s issues-and-prs.json ]; then 
+            echo "issues-and-prs.json is missing or empty"
+            exit 1
+          fi
+          echo "Length after Issues check: $(jq length issues-and-prs.json)."
       - name: "Find new PRs w/ label"
         if: contains(fromJSON(env.TYPE), 'PR')
         env:
@@ -36,19 +58,23 @@ jobs:
             author: .author.login,
             url,
             createdAt,
-            reviewers: (([.reviews[].author.login] + [.reviewRequests[].login]) | unique)
+            reviewers: (([(.reviews // [])[].author.login] + [(.reviewRequests // [])[].login]) | unique)
           })' >> issues-and-prs.json
           if [ ! -s issues-and-prs.json ]; then 
             echo "issues-and-prs.json is missing or empty"
             exit 1
           fi
-          echo "Found $(jq length issues-and-prs.json) new Issues/PRs."
-      - name: "Check that I'm not author or reviewer"
+          echo "Length after Issues + PR check: $(jq length issues-and-prs.json)."
+      - name: "Check not author, assignees, or reviewer"
         id: filter
         run: |
           TOTAL=$(jq length issues-and-prs.json)
           AVAILABLE=$(jq --arg me "${{github.repository_owner}}" \
-            'map(select(.author != $me and (any(.reviewers[]; . == $me) | not)))' issues-and-prs.json)
+            'map(select(
+              .author != $me 
+              and ((.assignees // []) | length == 0) 
+              and (any((.reviewers // [])[]; . == $me) | not)
+            ))' issues-and-prs.json)
           COUNT=$(echo "$AVAILABLE" | jq 'length')
           echo "count=$COUNT" >> "$GITHUB_OUTPUT"
 
