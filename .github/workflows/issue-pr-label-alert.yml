@@ -34,7 +34,7 @@ jobs:
           --jq 'map({  
             number,
             title,
-            type: 'Issue',
+            type: Issue,
             author: .author.login,
             url,
             createdAt,
@@ -56,7 +56,7 @@ jobs:
           --jq 'map({  
             number,
             title,
-            type: 'PR',
+            type: PR,
             author: .author.login,
             url,
             createdAt,
