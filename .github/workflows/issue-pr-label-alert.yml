@@ -92,7 +92,7 @@ jobs:
           else
             echo "Available Issues/PRs:"
             echo "Desired Issues/PRs available: " > message.txt
-            echo "$AVAILABLE" | jq -r '.[] | "\n\(.type) \#\(.number) - \(.title)\nGo to url: \(.url)\nCreated: \(.createdAt)"' >> message.txt
+            echo "$AVAILABLE" | jq -r '.[] | "\n\(.type) #\(.number) - \(.title)\nGo to url: \(.url)\nCreated: \(.createdAt)"' >> message.txt
             cat message.txt
           fi
       - name: "Post alert comment"
