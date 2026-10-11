@@ -16,6 +16,7 @@ env:
   LABEL: "Complexity: Large"
   LOOKBACK: "40 days"
   COMMENT_NUMBER: "1"
+  TYPE: [PR] # options: [PR], [Issue], or [PR, Issue]
 
 jobs:
   check-and-alert:
@@ -56,7 +57,8 @@ jobs:
             echo "Nothing new that you don't own or haven't already claimed."
           else
             echo "Available PRs:"
-            echo "$AVAILABLE" | jq -r '.[] | "\(.number) - \(.title)\nGo to url: \(.url)\nCreated: \(.createdAt)\n"' > message.txt
+            echo "Desired PRs available: " > message.text
+            echo "$AVAILABLE" | jq -r '.[] | "\n\(.number) - \(.title)\nGo to url: \(.url)\nCreated: \(.createdAt)"' >> message.txt
             cat message.txt
           fi
       - name: "Post alert comment"
