@@ -1,0 +1,71 @@
+name: "PRs with label(s) alert"
+
+on:
+  schedule:
+    - cron: "45 5 * * *"
+      timezone: "America/New_York"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: read
+
+# Customize here
+env:
+  REPO: hackforla/website
+  LABEL: "Complexity: Medium"
+  LOOKBACK: "40 days"
+  COMMENT_NUMBER: "1"
+
+jobs:
+  check-and-alert:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Find new PRs w/ label"
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          SINCE=$(date -u -d "$LOOKBACK ago" +%Y-%m-%dT%H:%M:%SZ)
+          gh pr list --repo "$REPO" --label "$LABEL" --state open \
+          --search "created:>=$SINCE"  --limit 25 --json number,title,author,url,createdAt,reviews,reviewRequests \
+          --jq 'map({  
+            number,
+            title,
+            author: .author.login,
+            url,
+            createdAt,
+            reviewers: (([(.reviews // [])[].author.login] + [(.reviewRequests // [])[].login]) | unique)
+          })' > results.json
+          if [ ! -s results.json ]; then 
+            echo "results.json is missing or empty"
+            exit 1
+          fi
+          echo "PR check length: $(jq length results.json)."
+      - name: "Check not author or reviewer"
+        id: filter
+        run: |
+          TOTAL=$(jq length results.json)
+          AVAILABLE=$(jq --arg me "${{github.repository_owner}}" \
+            'map(select(
+              .author != $me 
+              and (any((.reviewers // [])[]; . == $me) | not)
+            ))' results.json)
+          COUNT=$(echo "$AVAILABLE" | jq 'length')
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+
+          if [ "$TOTAL" -eq 0 ]; then
+            echo "Nothing new."
+          elif [ "$COUNT" -eq 0 ]; then
+            echo "Nothing new that you don't own or haven't already claimed."
+          else
+            echo "Available PRs:"
+            echo "Desired PRs available: " > message.txt
+            echo "$AVAILABLE" | jq -r --arg "$TYPE" '.[] | "\nPR #\(.number) - \(.title)\nGo to url: \(.url)\nCreated: \(.createdAt)"' >> message.txt
+            cat message.txt
+          fi
+      - name: "Post alert comment"
+        if: steps.filter.outputs.count != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue comment $COMMENT_NUMBER --repo "${{ github.repository }}" --body-file message.txt
