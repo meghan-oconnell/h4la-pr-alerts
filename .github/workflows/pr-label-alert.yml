@@ -60,7 +60,7 @@ jobs:
           else
             echo "Available PRs:"
             echo "Desired PRs available: " > message.txt
-            echo "$AVAILABLE" | jq -r --arg "$TYPE" '.[] | "\nPR #\(.number) - \(.title)\nGo to url: \(.url)\nCreated: \(.createdAt)"' >> message.txt
+            echo "$AVAILABLE" | jq -r '.[] | "\nPR #\(.number) - \(.title)\nGo to url: \(.url)\nCreated: \(.createdAt)"' >> message.txt
             cat message.txt
           fi
       - name: "Post alert comment"
