@@ -6,13 +6,15 @@ on:
       timezone: "America/New_York"
   workflow_dispatch:
 
-permissions: {}
+permissions:
+  issues: write
 
 # Customize here
 env:
   REPO: hackforla/website
   LABEL: "Complexity: LARGE"
   LOOKBACK: "5 months"
+  COMMENT_NUMBER: "1"
 
 jobs:
   check-and-alert:
@@ -51,5 +53,12 @@ jobs:
             echo "Nothing new that you don't own or haven't already claimed."
           else
             echo "Available PRs:"
-            echo "$AVAILABLE" | jq -r '.[] | "\(.number) - \(.title)\nGo to url: \(.url)\nCreated: \(.createdAt)\n"'
+            echo "$AVAILABLE" | jq -r '.[] | "\(.number) - \(.title)\nGo to url: \(.url)\nCreated: \(.createdAt)\n"' > message.txt
           fi
+      - name: "Post alert comment"
+        if: steps.filter.outputs.count != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo messages.txt  
+          gh issue comment $COMMENT_NUMBER --repo "${{ github.repository }}" --body-file message.txt
