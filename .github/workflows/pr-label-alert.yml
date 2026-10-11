@@ -1,20 +1,17 @@
 name: "PRs with label alert"
-
 on:
   schedule:
     - cron: "25 * * * *"
-
+  workflow_dispatch: {}
 permissions:
   issues: write
   pull-requests: read
-
 # Customize here
 env:
   REPO: hackforla/website
   LABEL: "good first issue"
   LOOKBACK: "40 days"
   COMMENT_NUMBER: "1"
-
 jobs:
   check-and-alert:
     runs-on: ubuntu-latest
@@ -50,7 +47,6 @@ jobs:
             ))' results.json)
           COUNT=$(echo "$AVAILABLE" | jq 'length')
           echo "count=$COUNT" >> "$GITHUB_OUTPUT"
-
           if [ "$TOTAL" -eq 0 ]; then
             echo "Nothing new."
           elif [ "$COUNT" -eq 0 ]; then
