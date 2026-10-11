@@ -1,4 +1,4 @@
-name: "PRs with Label Alert"
+name: "Issues/PRs with Label Alert"
 
 on:
   schedule:
@@ -13,7 +13,7 @@ permissions:
 # Customize here
 env:
   REPO: hackforla/website
-  ISSUE_TYPE: '[ "PR" ]' # must be string of array. Options: '[ "PR" ]', '[ "Issue" ]', or both '[ "PR", "Issue" ]'
+  TYPE: '[ "PR" ]' # must be string of array. Options: '[ "PR" ]', '[ "Issue" ]', or both '[ "PR", "Issue" ]'
   LABEL: "Complexity: Large"
   LOOKBACK: "40 days"
   COMMENT_NUMBER: "1"
@@ -23,6 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Find new PRs w/ label"
+        if: contains(fromJSON(env.TYPE), 'PR')
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
