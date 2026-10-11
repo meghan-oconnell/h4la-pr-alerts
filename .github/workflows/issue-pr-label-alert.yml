@@ -37,13 +37,13 @@ jobs:
             author: .author.login,
             url,
             createdAt,
-            assignees: [(.assignees[] // [])[].login]
-          })' >> issues-and-prs.json
-          if [ ! -s issues-and-prs.json ]; then 
-            echo "issues-and-prs.json is missing or empty"
+            assignees: [(.assignees // [])[].login]
+          })' > issues.json
+          if [ ! -s issues.json ]; then 
+            echo "issues.json is missing or empty"
             exit 1
           fi
-          echo "Length after Issues check: $(jq length issues-and-prs.json)."
+          echo "Length after Issues check: $(jq length issues.json)."
       - name: "Find new PRs w/ label"
         if: contains(fromJSON(env.TYPE), 'PR')
         env:
@@ -59,15 +59,20 @@ jobs:
             url,
             createdAt,
             reviewers: (([(.reviews // [])[].author.login] + [(.reviewRequests // [])[].login]) | unique)
-          })' >> issues-and-prs.json
-          if [ ! -s issues-and-prs.json ]; then 
-            echo "issues-and-prs.json is missing or empty"
+          })' > prs.json
+          if [ ! -s prs.json ]; then 
+            echo "prs.json is missing or empty"
             exit 1
           fi
-          echo "Length after Issues + PR check: $(jq length issues-and-prs.json)."
+          echo "Length after Issues + PR check: $(jq length prs.json)."
       - name: "Check not author, assignees, or reviewer"
         id: filter
         run: |
+          for f in issues.json prs.json; do
+            [ -f "$f" ] || echo '[]' > "$f"
+          done
+          jq -s 'add' issues.json prs.json > issues-and-prs.json  
+
           TOTAL=$(jq length issues-and-prs.json)
           AVAILABLE=$(jq --arg me "${{github.repository_owner}}" \
             'map(select(
