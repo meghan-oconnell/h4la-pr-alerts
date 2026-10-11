@@ -13,10 +13,10 @@ permissions:
 # Customize here
 env:
   REPO: hackforla/website
+  ISSUE_TYPE: '[ "PR" ]' # must be string of array. Options: '[ "PR" ]', '[ "Issue" ]', or both '[ "PR", "Issue" ]'
   LABEL: "Complexity: Large"
   LOOKBACK: "40 days"
   COMMENT_NUMBER: "1"
-  #TYPE: [PR] # options: [PR], [Issue], or [PR, Issue]
 
 jobs:
   check-and-alert:
@@ -36,18 +36,18 @@ jobs:
             url,
             createdAt,
             reviewers: (([.reviews[].author.login] + [.reviewRequests[].login]) | unique)
-          })' > prs.json
-          if [ ! -s prs.json ]; then 
-            echo "prs.json is missing or empty"
+          })' >> issues-and-prs.json
+          if [ ! -s issues-and-prs.json ]; then 
+            echo "issues-and-prs.json is missing or empty"
             exit 1
           fi
-          echo "Found $(jq length prs.json) new PRs."
+          echo "Found $(jq length issues-and-prs.json) new Issues/PRs."
       - name: "Check that I'm not author or reviewer"
         id: filter
         run: |
-          TOTAL=$(jq length prs.json)
+          TOTAL=$(jq length issues-and-prs.json)
           AVAILABLE=$(jq --arg me "${{github.repository_owner}}" \
-            'map(select(.author != $me and (any(.reviewers[]; . == $me) | not)))' prs.json)
+            'map(select(.author != $me and (any(.reviewers[]; . == $me) | not)))' issues-and-prs.json)
           COUNT=$(echo "$AVAILABLE" | jq 'length')
           echo "count=$COUNT" >> "$GITHUB_OUTPUT"
 
@@ -56,8 +56,8 @@ jobs:
           elif [ "$COUNT" -eq 0 ]; then
             echo "Nothing new that you don't own or haven't already claimed."
           else
-            echo "Available PRs:"
-            echo "Desired PRs available: " > message.txt
+            echo "Available Issues/PRs:"
+            echo "Desired Issues/PRs available: " > message.txt
             echo "$AVAILABLE" | jq -r '.[] | "\n\(.number) - \(.title)\nGo to url: \(.url)\nCreated: \(.createdAt)"' >> message.txt
             cat message.txt
           fi
