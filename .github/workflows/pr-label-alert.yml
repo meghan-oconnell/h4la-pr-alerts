@@ -42,22 +42,22 @@ jobs:
           fi
           echo "Found $(jq length prs.json) new PRs."
       - name: "Check that I'm not author or reviewer"
+        id: filter
         run: |
           TOTAL=$(jq length prs.json)
           AVAILABLE=$(jq --arg me "${{github.repository_owner}}" \
             'map(select(.author != $me and (any(.reviewers[]; . == $me) | not)))' prs.json)
           COUNT=$(echo "$AVAILABLE" | jq 'length')
-
-          echo "COUNT: $COUNT"
-          echo "AVAILABLE $AVAILABLE"
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
 
           if [ "$TOTAL" -eq 0 ]; then
             echo "Nothing new."
-          elif [ "$COUNT" -eq 0]; then
+          elif [ "$COUNT" -eq 0 ]; then
             echo "Nothing new that you don't own or haven't already claimed."
           else
             echo "Available PRs:"
             echo "$AVAILABLE" | jq -r '.[] | "\(.number) - \(.title)\nGo to url: \(.url)\nCreated: \(.createdAt)\n"' > message.txt
+            cat message.txt
           fi
       - name: "Post alert comment"
         if: steps.filter.outputs.count != '0'
