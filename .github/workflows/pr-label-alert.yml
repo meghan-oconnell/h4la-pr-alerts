@@ -49,6 +49,7 @@ jobs:
           COUNT=$(echo "$AVAILABLE" | jq 'length')
 
           echo "COUNT: $COUNT"
+          echo "AVAILABLE $AVAILABLE"
 
           if [ "$TOTAL" -eq 0 ]; then
             echo "Nothing new."
