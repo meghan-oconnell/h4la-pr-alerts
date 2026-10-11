@@ -1,10 +1,8 @@
-name: "PRs with label(s) alert"
+name: "PRs with label alert"
 
 on:
   schedule:
-    - cron: "45 * * * *"
-      timezone: "America/New_York"
-  workflow_dispatch:
+    - cron: "25 * * * *"
 
 permissions:
   issues: write
