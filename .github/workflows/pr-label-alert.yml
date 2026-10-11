@@ -48,6 +48,8 @@ jobs:
             'map(select(.author != $me and (any(.reviewers[]; . == $me) | not)))' prs.json)
           COUNT=$(echo "$AVAILABLE" | jq 'length')
 
+          echo "COUNT: $COUNT"
+
           if [ "$TOTAL" -eq 0 ]; then
             echo "Nothing new."
           elif [ "$COUNT" -eq 0]; then
