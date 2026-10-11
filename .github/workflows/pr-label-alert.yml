@@ -57,7 +57,7 @@ jobs:
             echo "Nothing new that you don't own or haven't already claimed."
           else
             echo "Available PRs:"
-            echo "Desired PRs available: " > message.text
+            echo "Desired PRs available: " > message.txt
             echo "$AVAILABLE" | jq -r '.[] | "\n\(.number) - \(.title)\nGo to url: \(.url)\nCreated: \(.createdAt)"' >> message.txt
             cat message.txt
           fi
