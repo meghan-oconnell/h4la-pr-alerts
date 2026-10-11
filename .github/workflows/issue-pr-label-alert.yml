@@ -34,6 +34,7 @@ jobs:
           --jq 'map({  
             number,
             title,
+            type: 'Issue',
             author: .author.login,
             url,
             createdAt,
@@ -43,7 +44,7 @@ jobs:
             echo "issues.json is missing or empty"
             exit 1
           fi
-          echo "Length after Issues check: $(jq length issues.json)."
+          echo "Issue check length: $(jq length issues.json)."
       - name: "Find new PRs w/ label"
         if: contains(fromJSON(env.TYPE), 'PR')
         env:
@@ -55,6 +56,7 @@ jobs:
           --jq 'map({  
             number,
             title,
+            type: 'PR',
             author: .author.login,
             url,
             createdAt,
@@ -64,7 +66,7 @@ jobs:
             echo "prs.json is missing or empty"
             exit 1
           fi
-          echo "Length after Issues + PR check: $(jq length prs.json)."
+          echo "PR check length: $(jq length prs.json)."
       - name: "Check not author, assignees, or reviewer"
         id: filter
         run: |
@@ -90,7 +92,7 @@ jobs:
           else
             echo "Available Issues/PRs:"
             echo "Desired Issues/PRs available: " > message.txt
-            echo "$AVAILABLE" | jq -r '.[] | "\n\(.number) - \(.title)\nGo to url: \(.url)\nCreated: \(.createdAt)"' >> message.txt
+            echo "$AVAILABLE" | jq -r '.[] | "\n\(.type) (.number) - \(.title)\nGo to url: \(.url)\nCreated: \(.createdAt)"' >> message.txt
             cat message.txt
           fi
       - name: "Post alert comment"
