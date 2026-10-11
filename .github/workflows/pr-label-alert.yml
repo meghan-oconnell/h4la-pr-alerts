@@ -16,7 +16,7 @@ env:
   LABEL: "Complexity: Large"
   LOOKBACK: "40 days"
   COMMENT_NUMBER: "1"
-  TYPE: [PR] # options: [PR], [Issue], or [PR, Issue]
+  #TYPE: [PR] # options: [PR], [Issue], or [PR, Issue]
 
 jobs:
   check-and-alert:
