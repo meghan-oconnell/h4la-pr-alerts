@@ -1,16 +1,19 @@
 name: "PRs with label alert"
 on:
   schedule:
-    - cron: "40 * * * *"
+    - cron: "45 9,21 * * *"
   workflow_dispatch: {}
 permissions:
   issues: write
   pull-requests: read
+defaults:
+  run:
+    shell: "bash"
 # Customize here
 env:
   REPO: hackforla/website
-  LABEL: "good first issue"
-  LOOKBACK: "40 days"
+  LABEL: "Complexity: Medium"
+  LOOKBACK: "2 days"
   COMMENT_NUMBER: "1"
 jobs:
   check-and-alert:
@@ -31,10 +34,6 @@ jobs:
             createdAt,
             reviewers: (([(.reviews // [])[].author.login] + [(.reviewRequests // [])[].login]) | unique)
           })' > results.json
-          if [ ! -s results.json ]; then 
-            echo "results.json is missing or empty"
-            exit 1
-          fi
           echo "PR check length: $(jq length results.json)."
       - name: "Check not author or reviewer"
         id: filter
